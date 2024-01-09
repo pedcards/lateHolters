@@ -68,6 +68,17 @@ readSheet(sheet) {
 }
 
 checkArchive(rowArr) {
+	name := stRegX(rowArr.Name,"",1,0,",",1)
+	date := ParseDate(rowArr.Date).YMD
+	pattern := "TRRIQ_ORU_" name "_" date "*"
+	loop files, ".\ArchiveHL7\" pattern
+	{
+		txt := FileRead(A_LoopFileFullPath)
+		trDate := ParseDate(stRegX(txt,"TRRIQ\|HS\|\|",1,1,"\|\|ORU",1)).MDY
+		epDate := ParseDate(FileGetTime(A_LoopFileFullPath)).MDY
+		return {TRRIQ:trDate,EP:epDate}
+	}
+}
 
 }
 
