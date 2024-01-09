@@ -56,8 +56,11 @@ readSheet(sheet) {
 			if (colNum=colDate) {
 				rowArr.Date := cel
 			}
-			checkArchive(rowArr)
 		}
+		if (rowNum=titleRow) {
+			continue
+		}
+		x := checkArchive(rowArr)
 	
 	}
 		
