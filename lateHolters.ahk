@@ -36,8 +36,7 @@ readSheet(sheet) {
 			}
 			if (rowNum=titleRow) {
 				if (x := ObjHasValue(colTitle,cel)) {
-					xname := colIdx[x]
-					col%xname% := colNum
+					col%colIdx[x]% := colNum
 				}
 				if (cel="") {
 					maxcol := colNum
