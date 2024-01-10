@@ -24,9 +24,8 @@ readSheet(sheet) {
 	colIdx :=	["Name","MRN","Date","TRRIQ","Read","Note"]
 	colName := colMRN := colDate := colTRRIQ := colRead := colNote := ""
 
-	orderID := true
-
-	while (orderID) {																			; read rows
+	loop 																						; read rows
+	{
 		rowNum := A_Index
 		rowArr := Map()
 
@@ -60,8 +59,17 @@ readSheet(sheet) {
 		if (rowNum=titleRow) {
 			continue
 		}
-		x := checkArchive(rowArr)
-	
+		if (rowArr.Name="") {
+			break
+		}
+		if (processed := checkArchive(rowArr)) {
+			sheet.Range(colArr[colTRRIQ] rowNum).Value := processed.TRRIQ
+			sheet.Range(colArr[colRead] rowNum).Value := processed.EP
+			sheet.Range(colArr[colNote] rowNum).Value := processed.Note
+		}
+		if (rowNum=300) {
+			break
+		}
 	}
 		
 	
