@@ -271,3 +271,5 @@ ObjHasValue(aObj, aValue, rx:="") {
 }
 
 #Include strx2.ahk
+#Include xml2.ahk
+#Include sift3.ahk
