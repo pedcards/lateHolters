@@ -76,16 +76,62 @@ readSheet(sheet) {
 }
 
 checkArchive(rowArr) {
+	global yXml
+
+	archivePath := ".\ArchiveHL7"
+	tempfilesPath := "\\childrens\files\HCHolterDatabase\PROD\TRRIQ\tempfiles"
+
 	name := stRegX(rowArr.Name,"",1,0,",",1)
 	date := ParseDate(rowArr.Date).YMD
-	pattern := "TRRIQ_ORU_" name "_" date "*"
-	loop files, ".\ArchiveHL7\" pattern
+	pattern := "TRRIQ_ORU_" name "_*" ;date "*"
+	archList := ""
+	note := ""
+
+	/*	Find archived HL7 with name and order date
+	*/
+	loop files, archivePath "\" pattern
 	{
-		txt := FileRead(A_LoopFileFullPath)
-		trDate := ParseDate(stRegX(txt,"TRRIQ\|HS\|\|",1,1,"\|\|ORU",1)).MDY
-		epDate := ParseDate(FileGetTime(A_LoopFileFullPath)).MDY
-		return {TRRIQ:trDate,EP:epDate}
+		RegExMatch(A_LoopFileName,"_(\d+)_@",&dt)
+		if (DateDiff(dt.1,date,"Days") < 0) {											; skip files with date before order date
+			continue
+		}
+
+		archList .= A_LoopFileName "`n"
 	}
+	archList := Sort(archList)
+	loop parse Trim(archList,"`n`r"), "`n"
+	{
+		filepath := archivePath "\" A_LoopField
+		RegExMatch(A_LoopField,"_(\d+)_@",&dt)
+		txt := FileRead(filepath)
+		PID := StrSplit(stregX(txt,"PID",0,0,"\R+",0),"|")
+		PID.Name := StrReplace(PID[6],"^",",")
+		fuzz := FuzzySearch(rowArr.Name,PID.Name)
+		trDate := ParseDate(stRegX(txt,"TRRIQ\|HS\|\|",1,1,"\|\|ORU",1)).MDY			; get date MA processed
+		epDate := ParseDate(FileGetTime(filepath)).MDY									; get date ORU created (EP signed)
+		if (DateDiff(dt.1,date,"Days")>60) {											; skip files if study too recent (prob new order)
+			continue
+		}
+		if (date != dt.1) {
+			note := "Order date " rowArr.Date ", Study date " ParseDate(dt.1).MDY
+		}
+		if (fuzz<0.1) {
+			return {TRRIQ:trDate,EP:epDate,Note:note}
+		}
+		if (fuzz<0.2) {
+			MsgBox("cel name=" rowArr.Name "`nORU name=" PID.Name
+				,"Name match?")
+			note .= "cel name=" rowArr.Name "`nORU name=" PID.Name ". " note
+			return {TRRIQ:trDate,EP:epDate,Note:note}
+		}
+	}
+
+	; k := yXml.selectSingleNode("//enroll[name='" rowArr.Name "']")
+
+	; loop files, tempfilesPath "\*" name "*" RegExReplace(ParseDate(rowArr.Date).MDY,"/","-") ".csv"
+	; {
+	; 	x := A_LoopFileName
+	; }
 }
 
 ParseDate(x) {
