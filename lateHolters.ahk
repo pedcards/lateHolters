@@ -2,6 +2,9 @@
 
 SetWorkingDir(A_ScriptDir)
 
+yXml := ComObject("Msxml2.DOMDocument.6.0")
+yXml.load("worklist.xml")
+
 inFile := "unsigned.xlsx"
 checks := "Sea Bellevue North|Central WA"
 
