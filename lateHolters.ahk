@@ -20,9 +20,9 @@ for sheet in xl.worksheets
 
 readSheet(sheet) {
 	colArr := ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q"]
-	colTitle := ["Patient Name","MRN","Date","TRRIQ done","EP read"]
-	colIdx :=	["Name","MRN","Date","TRRIQ","Read"]
-	colName := colMRN := colDate := colTRRIQ := colRead := ""
+	colTitle := ["Patient Name","MRN","Date","TRRIQ done","EP read","Note"]
+	colIdx :=	["Name","MRN","Date","TRRIQ","Read","Note"]
+	colName := colMRN := colDate := colTRRIQ := colRead := colNote := ""
 
 	orderID := true
 
