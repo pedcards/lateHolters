@@ -53,9 +53,6 @@ readSheet(sheet) {
 			if (colNum=colName) {
 				rowArr.Name := cel
 			}
-			if (colNum=colMRN) {
-				rowArr.MRN := RegExReplace(cel,"E")
-			}
 			if (colNum=colDate) {
 				rowArr.Date := cel
 			}
