@@ -84,7 +84,7 @@ checkArchive(rowArr) {
 	name := stRegX(rowArr.Name,"",1,0,",",1)
 	date := ParseDate(rowArr.Date).YMD
 	pattern := "TRRIQ_ORU_" name "_*" ;date "*"
-	archList := ""
+	archList := tempList := ""
 	note := ""
 
 	/*	Find archived HL7 with name and order date
@@ -119,10 +119,12 @@ checkArchive(rowArr) {
 			return {TRRIQ:trDate,EP:epDate,Note:note}
 		}
 		if (fuzz<0.2) {
-			MsgBox("cel name=" rowArr.Name "`nORU name=" PID.Name
-				,"Name match?")
-			note .= "cel name=" rowArr.Name "`nORU name=" PID.Name ". " note
-			return {TRRIQ:trDate,EP:epDate,Note:note}
+			ask := MsgBox("cel name=" rowArr.Name "`nORU name=" PID.Name
+						,"Name match?","0x23")
+			if (ask="Yes") {
+				note .= "cel name=" rowArr.Name "`nORU name=" PID.Name ". " note
+				return {TRRIQ:trDate,EP:epDate,Note:note}
+			}
 		}
 	}
 
