@@ -128,12 +128,56 @@ checkArchive(rowArr) {
 		}
 	}
 
+	/*	No result found in ArchiveHL7, look for evidence of processing
+	*/
 	; k := yXml.selectSingleNode("//enroll[name='" rowArr.Name "']")
 
-	; loop files, tempfilesPath "\*" name "*" RegExReplace(ParseDate(rowArr.Date).MDY,"/","-") ".csv"
-	; {
-	; 	x := A_LoopFileName
-	; }
+	loop files, tempfilesPath "\" pattern ;RegExReplace(ParseDate(rowArr.Date).MDY,"/","-") ".csv"
+	{
+		RegExMatch(A_LoopFileName,"_(\d+)_@",&dt)
+		if (DateDiff(dt.1,date,"Days") < 0) {											; skip files with date before order date
+			continue
+		}
+
+		tempList .= A_LoopFileName "`n"
+	}
+	if (tempList="") {
+		loop files, tempfilesPath "\archived\*" name " *.csv", "R"
+		{
+			if (DateDiff(A_LoopFileTimeModified,date,"Days") < 0) {
+				continue
+			}
+			txt := FileRead(A_LoopFileFullPath)
+		} 
+	}
+	tempList := Sort(tempList)
+	loop parse Trim(tempList,"`n`r"), "`n"
+	{
+		filepath := tempfilesPath "\" A_LoopField
+		RegExMatch(A_LoopField,"_(\d+)_@",&dt)
+		txt := FileRead(filepath)
+		PID := StrSplit(stregX(txt,"PID",0,0,"\R+",0),"|")
+		PID.Name := StrReplace(PID[6],"^",",")
+		fuzz := FuzzySearch(rowArr.Name,PID.Name)
+		trDate := ParseDate(stRegX(txt,"TRRIQ\|HS\|\|",1,1,"\|\|ORU",1)).MDY			; get date MA processed
+		if (DateDiff(dt.1,date,"Days")>60) {											; skip files if study too recent (prob new order)
+			continue
+		}
+		if (date != dt.1) {
+			note := "Order date " rowArr.Date ", Study date " ParseDate(dt.1).MDY
+		}
+		if (fuzz<0.1) {
+			return {TRRIQ:trDate,EP:epDate,Note:note}
+		}
+		if (fuzz<0.2) {
+			ask := MsgBox("cel name=" rowArr.Name "`nORU name=" PID.Name
+						,"Name match?","0x23")
+			if (ask="Yes") {
+				note .= "cel name=" rowArr.Name "`nORU name=" PID.Name ". " note
+				return {TRRIQ:trDate,EP:epDate,Note:note}
+			}
+		}
+	}
 }
 
 ParseDate(x) {
